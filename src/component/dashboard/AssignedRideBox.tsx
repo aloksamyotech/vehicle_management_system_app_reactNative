@@ -124,7 +124,7 @@ const styles = StyleSheet.create({
   rideInfoBox: {
     backgroundColor: "white",
     borderRadius: spacing.md,
-    padding: spacing.lg,
+    padding: spacing.xl,
     marginTop: spacing.md,
   },
   locationRow: {

@@ -15,7 +15,7 @@ const Dashboard: React.FC = () => {
   console.log('Dashboard component rendered');
   return (
     <OuterContainer>
-      <View style={{ flex: 2.5}}>
+      <View style={{ flex: 3}}>
         <DashboardHeader/>
         <AssignedRideBox/>
         </View>

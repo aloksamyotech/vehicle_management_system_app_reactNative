@@ -68,6 +68,7 @@ const SettingCard = () => {
 const styles = StyleSheet.create({
   container: {
     paddingVertical: 16,
+    marginTop: 20,
     backgroundColor: "#fff",
   },
   heading: {
@@ -79,7 +80,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    paddingVertical: 12,
+    paddingVertical: hp(2.5),
   },
   itemLeft: {
     flexDirection: "row",

@@ -31,10 +31,9 @@ const CustomerDetailsCard = () => {
 const styles = StyleSheet.create({
   container: {
     borderRadius: spacing.sm,
-    paddingHorizontal: spacing.lg,
-    paddingVertical:spacing.sm,
+    paddingVertical: spacing.xl,
+    paddingHorizontal: spacing.xxl,
     borderWidth: 1,
-    marginVertical:spacing.lg,
     borderColor: color.border,
     gap: spacing.xs,
   },
