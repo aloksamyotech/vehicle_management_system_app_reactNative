@@ -6,6 +6,7 @@ import {
   SafeAreaView,
   TextInput,
   TouchableOpacity,
+  ActivityIndicator,
 } from "react-native";
 import TextBold from "@/src/styles/TextBold";
 import { authService } from "@/src/api";
@@ -13,66 +14,68 @@ import useLoginDataStorage from "@/src/hooks/customStorageHook";
 import { useToast } from "@/src/hooks/useToast";
 import { useRouter } from "expo-router";
 
-
-
-
 interface ApiError {
   message: string;
   status: number;
 }
 
-
 const Login: React.FC = () => {
-  const [email,setEmail] = useState('');
-  const [password,setPassWord] =useState('');
+  const [phone, setPhone] = useState('');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const {storeLoginData,loginData} = useLoginDataStorage();
+  const { storeLoginData, loginData } = useLoginDataStorage();
   const { showToast } = useToast();
   const router = useRouter();
 
-  useEffect(()=>{
-    if(loginData){
-      router.push("/(main)/(home)")
+  useEffect(() => {
+    if (loginData) {
+      router.push("/(main)/(home)");
     }
-  },[loginData])
+  }, [loginData]);
  
   const handleLogin = async () => {
     setLoading(true);
     setError('');
   
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    // Validate phone number (basic validation)
+    const phoneRegex = /^\d{10}$/;
   
-    if (!email || !password) {
-      setError('Email and password are required');
-      showToast('error', 'Please enter both email and password');
+    if (!phone || !password) {
+      setError('Phone number and password are required');
+      showToast('error', 'Please enter both phone number and password');
       setLoading(false);
       return;
     }
   
-    if (!emailRegex.test(email)) {
-      setError('Invalid email format');
-      showToast('error', 'Please enter a valid email');
+    if (!phoneRegex.test(phone)) {
+      setError('Invalid phone number format');
+      showToast('error', 'Please enter a valid 10-digit phone number');
       setLoading(false);
       return;
     }
   
     try {
-      const loginData = {
-        email,
-        password,
-        userId: '1234'
-      };
-      console.log(loginData, 'loginData');
-  
-  
-      if (loginData) {
-        await storeLoginData(loginData);
-        console.log("✅ storeLoginData exists?", typeof storeLoginData);
-        showToast('success', 'Login successfully');
+      // Call the authService login method
+      const response = await authService.login(phone, password);
+      
+      if (response.success && response.data) {
+        // Create a loginData object with the received driver data
+        const LoginData = {
+          id: response.data.driver.id.toString(),
+          name: response.data.driver.name,
+          phone: response.data.driver.mobileNo,
+          token: response.data.access_token
+        };
+        
+        await storeLoginData(LoginData);
+        showToast('success', 'Login successful');
         router.push("/(main)/(home)");
+      } else {
+        throw new Error('Login failed');
       }
     } catch (error) {
+      console.log(error,"error")
       const apiError = error as ApiError;
       setError(apiError.message || 'Login failed');
       showToast('error', apiError.message || 'Login failed');
@@ -80,45 +83,55 @@ const Login: React.FC = () => {
       setLoading(false);
     }
   };
-  
- 
-  
 
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.content}>
-        <TextBold style={styles.heading}>Log in</TextBold>
+        {loginData ? (
+          <TextBold style={styles.heading}>Hi, {loginData.name?.split(' ')[0]}!</TextBold>
+        ) : (
+          <TextBold style={styles.heading}>Log in</TextBold>
+        )}
 
         <TextInput
           style={styles.input}
-          placeholder="Email"
-          keyboardType="email-address"
+          placeholder="Phone Number"
+          keyboardType="phone-pad"
           placeholderTextColor="#aaa"
-          onChangeText={(value)=>setEmail(value)}
+          value={phone}
+          onChangeText={setPhone}
         />
         <TextInput
           style={styles.input}
           placeholder="Password"
           secureTextEntry
           placeholderTextColor="#aaa"
-          onChangeText={(value)=>{setPassWord(value)}}
+          value={password}
+          onChangeText={setPassword}
         />
-          <Text style={styles.loginText}>Log In</Text>
+        
         <TouchableOpacity>
           <Text style={styles.forgotPassword}>Forgot Password?</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
-          <Text style={styles.loginText}>Log In</Text>
+        <TouchableOpacity 
+          style={[styles.loginButton, loading && styles.disabledButton]} 
+          onPress={handleLogin}
+          disabled={loading}
+        >
+          {loading ? (
+            <ActivityIndicator color="white" />
+          ) : (
+            <Text style={styles.loginText}>Log In</Text>
+          )}
         </TouchableOpacity>
+        
+        {error ? <Text style={styles.errorText}>{error}</Text> : null}
+        
         <Text style={styles.signupText}>
           Don't have an account? <Text style={styles.signupLink}>Sign Up</Text>
         </Text>
       </View>
-
-
-
-      
     </SafeAreaView>
   );
 };
@@ -160,11 +173,18 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     alignItems: "center",
   },
+  disabledButton: {
+    backgroundColor: "#95c3ff",
+  },
   loginText: {
     color: "white",
     fontSize: 16,
     fontWeight: "bold",
-
+  },
+  errorText: {
+    color: "red",
+    textAlign: "center",
+    marginTop: 10,
   },
   signupText: {
     textAlign: "center",
@@ -178,6 +198,3 @@ const styles = StyleSheet.create({
 });
 
 export default Login;
-
-
-

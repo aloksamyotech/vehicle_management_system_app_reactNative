@@ -58,7 +58,7 @@ const SettingCard = () => {
           <Feather name="chevron-right" size={18} color="black" />
         </TouchableOpacity>
       ))}
-          <EditProfileModal visible={visible} onClose={() => setVisible(false)} />
+          <EditProfileModal visible={visible} onClose={() => setVisible(false)}/>
           <ChangePasswordModal visiblePass={visiblePass} onClose={() => setVisiblePass(false)} />
     </View>
     
@@ -68,7 +68,7 @@ const SettingCard = () => {
 const styles = StyleSheet.create({
   container: {
     paddingVertical: 16,
-    marginTop: 20,
+    marginTop: 50,
     backgroundColor: "#fff",
   },
   heading: {

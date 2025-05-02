@@ -1,11 +1,14 @@
+import { BookingsContext } from "@/src/app/(main)/(home)";
 import { color } from "@/src/constants/colors";
 import { spacing } from "@/src/styles/Spacing";
 import TextNormal from "@/src/styles/TextNormal";
-import React from "react";
+import React, { useContext } from "react";
 import { View, StyleSheet, Image, Text, TouchableOpacity } from "react-native";
 import { heightPercentageToDP as hp } from "react-native-responsive-screen";
 
 const CarDetailsCard = () => {
+    const { bookings } = useContext(BookingsContext);
+    const booking = bookings.length > 0 ? bookings[0] : undefined;
   return (
     <TouchableOpacity style={styles.container}>
       <Image
@@ -15,8 +18,8 @@ const CarDetailsCard = () => {
       />
       <View style={styles.textContainer}>
         <TextNormal style={styles.title}>Car Details</TextNormal>
-        <TextNormal style={styles.subtitle}>Toyota Camry, Mate Black</TextNormal>
-        <TextNormal style={styles.plate}>TN 01 AN 2435</TextNormal>
+        <TextNormal style={styles.subtitle}>{booking?.vehicle.vehicleName}</TextNormal>
+        <TextNormal style={styles.plate}>{booking?.vehicle.registrationNo}</TextNormal>
       </View>
     </TouchableOpacity>
   );

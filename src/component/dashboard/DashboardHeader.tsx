@@ -7,8 +7,11 @@ import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 import { spacing } from "@/src/styles/Spacing";
 import AddExpenseModal from "./AddExpensesModal";
+import useLoginDataStorage from "@/src/hooks/customStorageHook";
 
 const DashboardHeader: React.FC = () => {
+
+    const {loginData} = useLoginDataStorage()
     const [visible, setVisible] = useState(false);
     return (
         <View style={styles.container}>
@@ -21,7 +24,7 @@ const DashboardHeader: React.FC = () => {
                     />
                 </View>
                 <View style={styles.nameContainer}>
-                    <TextBold style={styles.nameText}>Hii, Jonathan</TextBold>
+                    <TextBold style={styles.nameText}>  Hii, {loginData?.name?.split(' ')[0]}</TextBold>
                 </View>
             </View>
             <View style={styles.rightBox}>

@@ -1,6 +1,5 @@
-
-import React from "react";
-import { View, StyleSheet, TouchableOpacity } from "react-native";
+import React, { useContext } from "react";
+import { View, StyleSheet, TouchableOpacity, Text, ActivityIndicator } from "react-native";
 import TextNormal from "@/src/styles/TextNormal";
 import TextBold from "@/src/styles/TextBold";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
@@ -8,21 +7,105 @@ import { widthPercentageToDP as wp, heightPercentageToDP as hp } from "react-nat
 import { spacing } from "@/src/styles/Spacing";
 import { useRouter } from "expo-router";
 import { color } from "@/src/constants/colors";
+import { Booking } from "./RideTypes";
+import { BookingsContext } from "@/src/app/(main)/(home)";
+
 
 
 const AssignedRideBox: React.FC = () => {
-      const router = useRouter();
-    const handleJourney =()=>{
-        router.navigate("/rideDetails");
-    }
+  const router = useRouter();
+  const { bookings, loading, error, refreshBookings } = useContext(BookingsContext);
+  const booking = bookings.length > 0 ? bookings[0] : undefined;
+
+  console.log("AssignedRideBox - bookings:", bookings);
+  console.log("AssignedRideBox - booking:", booking);
+  const tripStartDate = booking?.tripStartDate
+  ? new Date(booking.tripStartDate).toLocaleDateString('en-GB', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+    })
+  : '';
+
+  const tripEndDate = booking?.tripStartDate
+  ? new Date(booking.tripEndDate).toLocaleDateString('en-GB', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+    })
+  : '';
+
+  const handleJourney = (): void => {
+    router.navigate("/rideDetails");
+  };
+
+  // Show loading indicator if data is still loading
+  if (loading) {
+    return (
+      <View style={styles.container}>
+        <View style={styles.header}>
+          <View style={styles.headerLeft}>
+            <TextNormal style={styles.headText}>Assigned Ride</TextNormal>
+            <TextNormal style={styles.subHeadText}>{`(Today ${new Date().toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })})`}</TextNormal>
+          </View>
+        </View>
+        <View style={[styles.rideInfoBox, styles.loadingContainer]}>
+          <ActivityIndicator size="large" color={color.primary} />
+          <TextNormal style={styles.loadingText}>Loading your assigned ride...</TextNormal>
+        </View>
+      </View>
+    );
+  }
+
+  // Show error message if there was an error loading data
+  if (error) {
+    return (
+      <View style={styles.container}>
+        <View style={styles.header}>
+          <View style={styles.headerLeft}>
+            <TextNormal style={styles.headText}>Assigned Ride</TextNormal>
+          </View>
+        </View>
+        <View style={[styles.rideInfoBox, styles.noRideContainer]}>
+          <TextNormal style={styles.errorText}>Error loading rides: {error}</TextNormal>
+          <TouchableOpacity style={styles.refreshButton} onPress={() => refreshBookings()}>
+            <FontAwesome name="refresh" size={16} color="white" style={{ marginRight: spacing.sm }} />
+            <TextNormal style={styles.refreshButtonText}>Retry</TextNormal>
+          </TouchableOpacity>
+        </View>
+      </View>
+    );
+  }
+
+  // Show no rides message if no bookings available
+  if (!booking) {
+    return (
+      <View style={styles.container}>
+        <View style={styles.header}>
+          <View style={styles.headerLeft}>
+            <TextNormal style={styles.headText}>Assigned Ride</TextNormal>
+            <TextNormal style={styles.subHeadText}>{`(Today ${new Date().toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })})`}</TextNormal>
+          </View>
+        </View>
+        <View style={[styles.rideInfoBox, styles.noRideContainer]}>
+          <TextNormal style={styles.noRideText}>No rides assigned for today</TextNormal>
+          <TouchableOpacity style={styles.refreshButton} onPress={() => refreshBookings()}>
+            <FontAwesome name="refresh" size={16} color="white" style={{ marginRight: spacing.sm }} />
+            <TextNormal style={styles.refreshButtonText}>Refresh</TextNormal>
+          </TouchableOpacity>
+        </View>
+      </View>
+    );
+  }
  
+  // Default view with booking data
   return (
     <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
         <View style={styles.headerLeft}>
           <TextNormal style={styles.headText}>Assigned Ride</TextNormal>
-          <TextNormal style={styles.subHeadText}>{`(Today 4-Apr-2025)`}</TextNormal>
+          <TextNormal style={styles.subHeadText}>{`(Today ${new Date().toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })})`}</TextNormal>
         </View>
         <View style={styles.activeContainer} />
       </View>
@@ -30,35 +113,35 @@ const AssignedRideBox: React.FC = () => {
       {/* Ride Status */}
       <View style={styles.statusRow}>
         <TextNormal style={styles.statusLabel}>Ride Status</TextNormal>
-        <TouchableOpacity style={styles.statusButton} >
-          <TextNormal style={styles.statusText}>Pending</TextNormal>
+        <TouchableOpacity style={styles.statusButton}>
+          <TextNormal style={styles.statusText}>{booking.tripStatus || "Pending"}</TextNormal>
         </TouchableOpacity>
       </View>
 
       {/* Ride Info Box */}
       <View style={styles.rideInfoBox}>
         <View style={styles.locationRow}>
-          <FontAwesome style={{marginTop:hp(0.6)}} name="circle" size={12} color={color.greenColor} />
+          <FontAwesome style={{marginTop: hp(0.6)}} name="circle" size={12} color={color.greenColor} />
           <TextNormal style={styles.locationLabel}>Pickup</TextNormal>
-          <TextNormal style={styles.timeText}>(Time 4 PM)</TextNormal>
+          <TextNormal style={styles.timeText}>{tripStartDate? `(Time ${tripStartDate})` : "(Time 4 PM)"}</TextNormal>
         </View>
-        <TextBold style={styles.locationAddress}>123 Market Street, San Francisco</TextBold>
+        <TextBold style={styles.locationAddress}>{booking.tripStartLoc || "123 Market Street, San Francisco"}</TextBold>
 
         <View style={styles.locationRow2}>
-          <FontAwesome style={{marginTop:hp(0.6)}} name="circle" size={12} color="#2D68FE" />
+          <FontAwesome style={{marginTop: hp(0.6)}} name="circle" size={12} color="#2D68FE" />
           <TextNormal style={styles.locationLabel}>Drop-off</TextNormal>
-          <TextNormal style={styles.timeText}>(Estimated Time 4 PM)</TextNormal>
+          <TextNormal style={styles.timeText}>{tripEndDate? `(Estimated Time ${tripEndDate})` : "(Estimated Time 4 PM)"}</TextNormal>
         </View>
-        <TextBold style={styles.locationAddress}>456 Mission Street, San Francisco</TextBold>
+        <TextBold style={styles.locationAddress}>{booking.tripEndLoc || "456 Mission Street, San Francisco"}</TextBold>
       </View>
 
       {/* Fare and Button */}
       <View style={styles.footer}>
         <View style={styles.fareRow}>
           <TextNormal style={styles.fareLabel}>Fare</TextNormal>
-          <TextNormal style={styles.fareValue}>$35</TextNormal>
+          <TextNormal style={styles.fareValue}>{booking.totalAmt ? `$${booking.totalAmt}` : "$35"}</TextNormal>
         </View>
-        <TouchableOpacity style={styles.button} onPress={handleJourney} >
+        <TouchableOpacity style={styles.button} onPress={handleJourney}>
           <TextNormal style={styles.buttonText}>Start Journey</TextNormal>
         </TouchableOpacity>
       </View>
@@ -69,7 +152,7 @@ const AssignedRideBox: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 2,
-    backgroundColor:color.primary,
+    backgroundColor: color.primary,
     borderRadius: spacing.xl,
     padding: spacing.md,
   },
@@ -110,7 +193,7 @@ const styles = StyleSheet.create({
     fontSize: hp(1.8),
   },
   statusButton: {
-    backgroundColor:color.pending,
+    backgroundColor: color.pending,
     paddingHorizontal: spacing.lg,
     borderRadius: spacing.lg,
     height: hp(3.7),
@@ -154,7 +237,6 @@ const styles = StyleSheet.create({
   footer: {
     marginTop: spacing.md,
     alignItems: "center",
-
   },
   fareRow: {
     flexDirection: "row",
@@ -172,7 +254,7 @@ const styles = StyleSheet.create({
     fontSize: spacing.xl,
   },
   button: {
-    backgroundColor:color.greenColor,
+    backgroundColor: color.greenColor,
     borderRadius: spacing.xxl,
     paddingHorizontal: spacing.xxl,
     height: hp(4.8),
@@ -183,6 +265,47 @@ const styles = StyleSheet.create({
     color: "white",
     fontSize: spacing.lg,
   },
+  // Added styles for the no-ride state
+  noRideContainer: {
+    justifyContent: "center",
+    alignItems: "center",
+    minHeight: hp(15),
+  },
+  loadingContainer: {
+    justifyContent: "center",
+    alignItems: "center",
+    minHeight: hp(15),
+  },
+  loadingText: {
+    marginTop: spacing.md,
+    color: color.primary,
+    fontSize: hp(1.6),
+  },
+  noRideText: {
+    color: color.primary,
+    fontSize: hp(1.8),
+    textAlign: "center",
+    marginBottom: spacing.lg,
+  },
+  errorText: {
+    color: 'red',
+    fontSize: hp(1.6),
+    textAlign: "center",
+    marginBottom: spacing.lg,
+  },
+  refreshButton: {
+    backgroundColor: color.greenColor,
+    borderRadius: spacing.xl,
+    paddingHorizontal: spacing.xl,
+    height: hp(4),
+    justifyContent: "center",
+    alignItems: "center",
+    flexDirection: "row",
+  },
+  refreshButtonText: {
+    color: "white",
+    fontSize: hp(1.6),
+  }
 });
 
 export default AssignedRideBox;

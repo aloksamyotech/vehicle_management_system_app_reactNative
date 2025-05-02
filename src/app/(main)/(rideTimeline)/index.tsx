@@ -1,84 +1,96 @@
 import RideList from "@/src/component/RideTimeLine/RideList";
 import { color } from "@/src/constants/colors";
-import OuterContainer from "@/src/styles/OuterContainer";
 import { spacing } from "@/src/styles/Spacing";
 import TextNormal from "@/src/styles/TextNormal";
 import React, { useState } from "react";
-import { View, TouchableOpacity, Text, StyleSheet } from "react-native";
+import { View, TouchableOpacity, StyleSheet } from "react-native";
 import { heightPercentageToDP as hp, widthPercentageToDP as wp } from "react-native-responsive-screen";
 
-const rideTimeline = () => {
-  const [activeTab, setActiveTab] = useState<"upcoming" | "completed">("upcoming");
-  const options = ["All", "This Month", "Last Month", "Custom"];
-  const [selected, setSelected] = useState("All");
+type FilterOption = "All" | "This Month" | "Last Month" | "Custom";
+type TabOption = "upcoming" | "completed";
+
+const RideTimeline: React.FC = () => {
+  const [activeTab, setActiveTab] = useState<TabOption>("upcoming");
+  const options: FilterOption[] = ["All", "This Month", "Last Month", "Custom"];
+  const [selected, setSelected] = useState<FilterOption>("All");
 
   return (
-    <View style={{flex:1,backgroundColor:"white"}}>
-   <View style={{backgroundColor:'#F2F2F2',marginTop:spacing.xxl,alignItems:'center',justifyContent:'center'}}>
-    <View style={styles.container}>
-      <TouchableOpacity
-        style={[
-          styles.tabButton,
-          activeTab === "upcoming" && styles.activeTab,
-        ]}
-        onPress={() => setActiveTab("upcoming")}
-      >
-        <TextNormal style={[styles.tabText, activeTab === "upcoming" && styles.activeTabText]}>
-          Upcoming Rides
-        </TextNormal>
-      </TouchableOpacity>
-      <TouchableOpacity
-        style={[
-          styles.tabButton,
-          activeTab === "completed" && styles.activeTab,
-        ]}
-        onPress={() => setActiveTab("completed")}
-      >
-        <TextNormal style={[styles.tabText, activeTab === "completed" && styles.activeTabText]}>
-          Completed Rides
-        </TextNormal>
-      </TouchableOpacity>
-    </View>
-    </View>
-
-    {
-      activeTab === "completed" && (
-        <View style={styles.container2}>
-        {options.map((option) => (
+    <View style={styles.mainContainer}>
+      <View style={styles.tabContainer}>
+        <View style={styles.tabButtons}>
           <TouchableOpacity
-            key={option}
             style={[
-              styles.optionButton,
-              selected === option && styles.selectedButton,
+              styles.tabButton,
+              activeTab === "upcoming" && styles.activeTab,
             ]}
-            onPress={() => setSelected(option)}
+            onPress={() => setActiveTab("upcoming")}
           >
-            <TextNormal
-              style={[
-                styles.optionText,
-                selected === option && styles.selectedText,
-              ]}
-            >
-              {option}
+            <TextNormal style={[styles.tabText, activeTab === "upcoming" && styles.activeTabText]}>
+              Upcoming Rides
             </TextNormal>
           </TouchableOpacity>
-        ))}
+          <TouchableOpacity
+            style={[
+              styles.tabButton,
+              activeTab === "completed" && styles.activeTab,
+            ]}
+            onPress={() => setActiveTab("completed")}
+          >
+            <TextNormal style={[styles.tabText, activeTab === "completed" && styles.activeTabText]}>
+              Completed Rides
+            </TextNormal>
+          </TouchableOpacity>
+        </View>
       </View>
-      )
-    }
-     {activeTab === "upcoming" && (
-       <View style={{marginTop:hp(2)}}></View>
-     )}
-      <RideList/>
-   </View>
+
+      {activeTab === "completed" && (
+        <View style={styles.optionsContainer}>
+          {options.map((option) => (
+            <TouchableOpacity
+              key={option}
+              style={[
+                styles.optionButton,
+                selected === option && styles.selectedButton,
+              ]}
+              onPress={() => setSelected(option)}
+            >
+              <TextNormal
+                style={[
+                  styles.optionText,
+                  selected === option && styles.selectedText,
+                ]}
+              >
+                {option}
+              </TextNormal>
+            </TouchableOpacity>
+          ))}
+        </View>
+      )}
+      
+      {activeTab === "upcoming" && (
+        <View style={styles.spacer}></View>
+      )}
+      
+      <RideList activeTab={activeTab} filterOption={selected} />
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
+  mainContainer: {
+    flex: 1,
+    backgroundColor: "white",
+  },
+  tabContainer: {
+    backgroundColor: '#F2F2F2',
+    marginTop: spacing.xxl,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  tabButtons: {
     flexDirection: "row",
-    borderRadius:spacing.xxl,
-    paddingVertical: spacing.sm, 
+    borderRadius: spacing.xxl,
+    paddingVertical: spacing.sm,
   },
   tabButton: {
     paddingVertical: spacing.sm,
@@ -96,10 +108,10 @@ const styles = StyleSheet.create({
   activeTabText: {
     color: "#FFFFFF",
   },
-  container2: {
+  optionsContainer: {
     flexDirection: "row",
     justifyContent: "center",
-     paddingVertical: spacing.md,
+    paddingVertical: spacing.md,
     paddingHorizontal: 10,
     gap: 10,
   },
@@ -108,10 +120,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     backgroundColor: "#F3F4F6",
     borderRadius: 20,
-
   },
   selectedButton: {
-    backgroundColor:color.primary,
+    backgroundColor: color.primary,
   },
   optionText: {
     color: color.labelColor,
@@ -120,6 +131,9 @@ const styles = StyleSheet.create({
   selectedText: {
     color: "#FFFFFF",
   },
+  spacer: {
+    marginTop: hp(2),
+  }
 });
 
-export default rideTimeline;
+export default RideTimeline;

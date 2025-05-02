@@ -1,17 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import * as SecureStore from 'expo-secure-store';
+import STORAGE_KEYS from '../constants/authConstants';
 
 export interface LoginData {
-  userId: string;
-  email: string;
-  password: string;
+  id: string;
+  name:string;
+  phone: string;
+  token: string;
 }
 
-const STORAGE_KEY = 'loginData';
 
 const useLoginDataStorage = () => {
   const [loginData, setLoginData] = useState<LoginData | null>(null);
   const [loading, setLoading] = useState(true);
+
+  console.log("loginData",loginData)
+
+  const STORAGE_KEY = STORAGE_KEYS.STORAGE_KEY
 
   useEffect(() => {
     const loadLoginData = async () => {

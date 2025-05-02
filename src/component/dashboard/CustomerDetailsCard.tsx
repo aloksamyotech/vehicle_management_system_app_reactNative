@@ -1,28 +1,31 @@
+import { BookingsContext } from "@/src/app/(main)/(home)";
 import { color } from "@/src/constants/colors";
 import { spacing } from "@/src/styles/Spacing";
 import TextNormal from "@/src/styles/TextNormal";
-import React from "react";
+import React, { useContext } from "react";
 import { View, StyleSheet, Text, TouchableOpacity } from "react-native";
 import { heightPercentageToDP as hp } from "react-native-responsive-screen";
 
 const CustomerDetailsCard = () => {
+      const { bookings } = useContext(BookingsContext);
+      const booking = bookings.length > 0 ? bookings[0] : undefined;
   return (
     <TouchableOpacity style={styles.container}>
       <Text style={styles.title}>Customer Details</Text>
 
       <View style={styles.row}>
         <TextNormal style={styles.label}>Name</TextNormal>
-        <TextNormal style={styles.value}>Rahul Verma</TextNormal>
+        <TextNormal style={styles.value}>{booking?.customer.name}</TextNormal>
       </View>
 
       <View style={styles.row}>
         <TextNormal style={styles.label}>Contact Info.</TextNormal>
-        <TextNormal style={styles.value}>+91 7828058757</TextNormal>
+        <TextNormal style={styles.value}>{booking?.customer.mobileNo}</TextNormal>
       </View>
 
       <View style={styles.row}>
-        <TextNormal style={styles.label}>Payment Mode</TextNormal>
-        <TextNormal style={styles.value}>upi</TextNormal>
+        <TextNormal style={styles.label}>Email</TextNormal>
+        <TextNormal style={styles.value}>{booking?.customer.email}</TextNormal>
       </View>
     </TouchableOpacity>
   );
