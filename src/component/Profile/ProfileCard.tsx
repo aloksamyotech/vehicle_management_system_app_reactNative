@@ -21,7 +21,7 @@ interface DriverData {
   dateOfJoining: string;
   totalExp: number;
   notes: string;
-  image: string;
+  imageUrl: string;
   doc: string;
   status: string;
   isDeleted: boolean;
@@ -49,22 +49,17 @@ const ProfileCard: React.FC = () => {
     const fetchDriverData = async (): Promise<void> => {
       try {
         setLoading(true);
-        
-        // Check if loginData and id exist before making the API call
+        setLoading(true);
         if (!loginData || !loginData.id) {
           throw new Error("Driver ID not found");
         }
-
-        const driverId = String(loginData.id); // Convert to string to ensure it's a string
-        console.log("driverId", driverId);
         
-        const response = await profileService.getDriverById(driverId);
+        const response = await profileService.getDriverById(loginData.id);
         
         if (response.success) {
-          // Cast the data as DriverData
+         console.log(response.data)
           setDriver(response.data as DriverData);
-          
-          // Check if we're using cached data
+        
           if (response.message && response.message.includes("cached data")) {
             setIsOfflineData(true);
             setError(response.message);
@@ -85,9 +80,9 @@ const ProfileCard: React.FC = () => {
     };
 
     fetchDriverData();
-  }, [loginData]); // Added loginData as a dependency
+  }, [loginData]); 
 
-  // Format date function
+
   const formatDate = (dateString: string): string => {
     if (!dateString) return '';
     const date = new Date(dateString);
@@ -130,8 +125,8 @@ const ProfileCard: React.FC = () => {
   }
 
   // Prepare image URL
-  const imageSource = driver.image ? 
-    { uri: `http://143.244.137.123:7600/uploads/${driver.image}` } : 
+  const imageSource = driver.imageUrl ? 
+    { uri: driver.imageUrl} : 
     require('../../assets/images/user.png');
 
   return (

@@ -6,6 +6,7 @@ import { color } from "@/src/constants/colors";
 import { heightPercentageToDP as hp} from "react-native-responsive-screen";
 import EditProfileModal from "./EditProfileModal";
 import ChangePasswordModal from "./ChangePasswordModal";
+import { useRouter } from 'expo-router';
 
 const settingsData = [
   {
@@ -37,6 +38,7 @@ type SettingItem = {
 const SettingCard = () => {
    const [visible, setVisible] = useState(false);
    const [visiblePass, setVisiblePass] = useState(false);
+   const router = useRouter();
 
   const handleSetting = (item:SettingItem) => {
     if(item.title === "Edit Profile Info"){
@@ -44,6 +46,15 @@ const SettingCard = () => {
     }
     if(item.title === "Change Password"){
       setVisiblePass(true);
+    }
+    if(item.title === "Contact Admin"){
+     router.push('/(common)/ContactAdmin')
+    }
+    if(item.title === 'Terms & Privacy Policy'){
+      router.push('/(common)/TermsAndPrivacy')
+    }
+    if(item.title === 'Notification Preferences'){
+      router.push('/(common)/NotificationPreferences')
     }
   };
   return (
@@ -80,7 +91,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    paddingVertical: hp(2.5),
+    paddingVertical: hp(2),
   },
   itemLeft: {
     flexDirection: "row",

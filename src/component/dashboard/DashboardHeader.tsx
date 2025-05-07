@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, {  useState } from "react";
 import { View, StyleSheet, Image, Text, TouchableOpacity } from "react-native";
 import TextNormal from "@/src/styles/TextNormal";
 import TextBold from "@/src/styles/TextBold";
@@ -8,11 +8,17 @@ import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-nat
 import { spacing } from "@/src/styles/Spacing";
 import AddExpenseModal from "./AddExpensesModal";
 import useLoginDataStorage from "@/src/hooks/customStorageHook";
+import { useRouter } from "expo-router";
 
 const DashboardHeader: React.FC = () => {
 
     const {loginData} = useLoginDataStorage()
     const [visible, setVisible] = useState(false);
+    const router = useRouter()
+
+    const handleNotification = ()=>{
+      router.push('/(common)/Notifications')
+    }
     return (
         <View style={styles.container}>
             <View style={styles.leftBox}>
@@ -35,7 +41,7 @@ const DashboardHeader: React.FC = () => {
                     <MaterialIcons name="add" size={20} color="#32B550"   />
                 </View>
             </TouchableOpacity>
-            <TouchableOpacity style={{paddingLeft:spacing.sm}}>
+            <TouchableOpacity style={{paddingLeft:spacing.sm}} onPress={handleNotification}>
                 <MaterialIcons name="notifications-none" size={27} color="black" style={styles.notiIcon} />
                 </TouchableOpacity>
             </View>

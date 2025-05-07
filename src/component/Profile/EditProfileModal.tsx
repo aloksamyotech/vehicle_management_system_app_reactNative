@@ -45,30 +45,29 @@ interface DriverData {
 interface EditProfileModalProps {
   visible: boolean;
   onClose: () => void;
-  onProfileUpdated?: () => void; // Optional callback when profile is updated
- // Optional driver ID, defaults to "1" if not provided
+  onProfileUpdated?: () => void; 
+
 }
 
 const EditProfileModal: React.FC<EditProfileModalProps> = ({ 
   visible, 
   onClose, 
-  onProfileUpdated, // Default to "1" if not provided
+  onProfileUpdated, 
 }) => {
-  // Form state
+
   const [name, setName] = useState<string>('');
   const [mobileNo, setMobileNo] = useState<string>('');
   const [address, setAddress] = useState<string>('');
   const [licenseNo, setLicenseNo] = useState<string>('');
   const [licenseExpiry, setLicenseExpiry] = useState<Date>(new Date());
   
-  // UI state
+
   const [loading, setLoading] = useState<boolean>(false);
   const [initialLoading, setInitialLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [showDatePicker, setShowDatePicker] = useState<boolean>(false);
   const {loginData} = useLoginDataStorage()
   const driverId = loginData?.id
-  // Fetch driver data when modal opens
   useEffect(() => {
     if (visible) {
       fetchDriverData();
@@ -82,15 +81,10 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
         throw new Error("Driver ID not found");
       }
 
-      const driverId = String(loginData.id); // Convert to string to ensure it's a string
-     
-      // Use profileService to get driver data
-      const response = await profileService.getDriverById(driverId);
-      
+   
+      const response = await profileService.getDriverById(loginData.id);
       if (response.success) {
         const driverData: DriverData = response.data;
-        
-        // Set form values
         setName(driverData.name);
         setMobileNo(driverData.mobileNo);
         setAddress(driverData.address);
@@ -104,7 +98,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
       setError(err.message);
       Alert.alert("Error", "Failed to load profile data. Please try again.");
       
-      // Try to get cached data as fallback
+   
       const cachedData = await profileService.getDriverData();
       if (cachedData) {
         setName(cachedData.name);
@@ -121,18 +115,16 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
   const handleSave = async (): Promise<void> => {
     try {
       setLoading(true);
-      
-      // Validate inputs
+    
       if (!name.trim() || !mobileNo.trim() || !address.trim() || !licenseNo.trim()) {
         Alert.alert("Validation Error", "All fields are required");
         setLoading(false);
         return;
       }
 
-      // Format date for API
       const formattedDate = licenseExpiry.toISOString();
 
-      // Prepare request body
+
       const updateData = {
         name,
         mobileNo,
@@ -141,13 +133,10 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
         licenseExpiry: formattedDate
       };
 
-      // Use profileService to update driver profile
       const response = await profileService.updateDriverProfile(Number(driverId), updateData);
       
       if (response.success) {
         Alert.alert("Success", "Profile updated successfully");
-        
-        // Call the callback if provided
         if (onProfileUpdated) {
           onProfileUpdated();
         }

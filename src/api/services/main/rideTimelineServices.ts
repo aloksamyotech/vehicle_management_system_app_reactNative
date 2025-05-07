@@ -53,7 +53,7 @@ export const rideTimelineServices = {
     }
   },
 
-  getTodayBookings: async (driverId: number): Promise<Booking[]> => {
+  getTodayBookings: async (driverId: string): Promise<Booking[]> => {
     try {
       console.log(driverId,"---------")
       const currentTime = Date.now();
