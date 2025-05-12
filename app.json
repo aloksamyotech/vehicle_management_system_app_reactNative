@@ -9,21 +9,15 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.sanskrutikanthale.routeex"
     },
-    "plugins": [
-  [
-    "expo-location",
-    {
-      "locationAlwaysAndWhenInUsePermission": "Allow $(PRODUCT_NAME) to use your location."
-    }
-  ]
-],
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.sanskrutikanthale.routeex"
     },
     "androidStatusBar": {
       "barStyle": "dark-content",
@@ -45,10 +39,27 @@
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
         }
+      ],
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Allow $(PRODUCT_NAME) to use your location."
+        }
       ]
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "extra": {
+      "ENV": "development",
+      "API_URL": "https://fleet.samyotech.in/api",
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "127528e3-b9c6-42b0-9955-0785b9950879"
+      }
+    },
+    "owner": "sanskrutikanthale"
   }
 }
