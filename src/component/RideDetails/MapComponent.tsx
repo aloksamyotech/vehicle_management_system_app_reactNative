@@ -80,8 +80,16 @@ import MapView, { Marker, UrlTile } from 'react-native-maps';
 import * as Location from 'expo-location';
 import { router, useRouter } from 'expo-router';
 import { heightPercentageToDP as hp } from 'react-native-responsive-screen';
+import rideTimelineServices from '@/src/api/services/main/rideTimelineServices';
 
-const MapComponent = () => {
+
+
+
+interface mapComponentProps {
+  bookingId?: string;
+}
+
+const MapComponent: React.FC<mapComponentProps> = ({ bookingId }) => {
   const router = useRouter();
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const [location, setLocation] = useState<{ latitude: number; longitude: number } | null>(null);
@@ -131,6 +139,43 @@ const MapComponent = () => {
     }
   };
 
+  const handleJourney = async()=>{
+    if (bookingId) {
+      try {
+    
+        const payload = {
+          tripStatus:"Completed"
+        }
+        await rideTimelineServices.updateTripStatus(bookingId,payload);
+
+        router.navigate('/(main)/(home)')
+      } catch (error: any) {
+        console.error("Error updating trip status:", error);
+      }
+    } else {
+      console.warn("Cannot navigate to ride details: booking ID is undefined");
+      router.navigate("/rideDetails");
+    }
+  }
+
+  const handleCancel = async ()=>{
+    if (bookingId) {
+      try {
+    
+        const payload = {
+          tripStatus:"Cancelled"
+        }
+        await rideTimelineServices.updateTripStatus(bookingId,payload);
+
+        router.navigate('/(main)/(home)')
+      } catch (error: any) {
+        console.error("Error updating trip status:", error);
+      }
+    } else {
+      console.warn("Cannot navigate to ride details: booking ID is undefined");
+      router.navigate("/rideDetails");
+    }
+  }
   return (
     <View style={styles.container}>
       <MapView
@@ -159,11 +204,11 @@ const MapComponent = () => {
       </MapView>
 
       <View style={styles.buttonContainer}>
-        <TouchableOpacity style={styles.cancelButton} onPress={() => router.back()}>
+        <TouchableOpacity style={styles.cancelButton} onPress={handleCancel}>
           <Text style={{ color: 'white' }}>Cancel Ride</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.trackButton} onPress={() => router.push('/trackRide')}>
-          <Text style={{ color: 'white' }}>Track on Map</Text>
+        <TouchableOpacity style={styles.trackButton} onPress={handleJourney}>
+          <Text style={{ color: 'white' }}>Journey Complete</Text>
         </TouchableOpacity>
       </View>
     </View>

@@ -9,7 +9,10 @@ export default {
     rideTimeLine:{
       getTodaysRide:'booking/todayBookings',
       addExpenses:'tripExpense/save',
-      getRideData:'booking/allBookings'
+      getRideData:'booking/allBookings',
+      getCheckpoints:'booking/checkpoints',
+      updateCheckpoint:'booking/checkpoints',
+      updateTripStatus: 'booking/updateStatus'
     },
     profile:{
       driverInfo:'driver/getById',

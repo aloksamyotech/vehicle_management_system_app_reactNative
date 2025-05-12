@@ -22,6 +22,8 @@ const RideList: React.FC<RideListProps> = ({
   const [error, setError] = useState<string | null>(null);
   const { loginData } = useLoginDataStorage();
 
+  console.log(activeTab)
+
   const fetchRides = useCallback(async (): Promise<void> => {
     try {
       setLoading(true);
@@ -32,7 +34,7 @@ const RideList: React.FC<RideListProps> = ({
       const response = await rideTimelineServices.getDriverRides(loginData.id);
       
       if (response && response.success) {
-        console.log(response.data)
+        console.log('====>',response.data)
         setRides(response.data || []);
         setError(null);
       } else {
@@ -74,9 +76,10 @@ const RideList: React.FC<RideListProps> = ({
     try {
       const today = new Date();
       const tripStartDate = new Date(ride.tripStartDate);
+
       
       if (activeTab === "upcoming") {
-        return  (tripStartDate > today && ride.tripStatus !== "Completed");
+        return  (tripStartDate >= today && ride.tripStatus !== "Completed");
       } else {
         const isCompleted = ride.tripStatus === "Completed" || (tripStartDate < today);
         
@@ -106,7 +109,7 @@ const RideList: React.FC<RideListProps> = ({
   const renderItem: ListRenderItem<Ride> = ({ item }) => {
     if (!item) return null;
     
-    // Calculate fare based on API data
+  
     const fare = `₹${(item.totalAmt || 0).toFixed(2)}`;
     
     return (

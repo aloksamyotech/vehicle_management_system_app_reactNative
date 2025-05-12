@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from "react";
-import { View, StyleSheet, Image, ActivityIndicator } from "react-native";
+
+import React, { useState, useEffect, useCallback } from "react";
+import { View, StyleSheet, Image, ActivityIndicator} from "react-native";
 import { MaterialIcons, FontAwesome } from "@expo/vector-icons";
 import { heightPercentageToDP as hp } from "react-native-responsive-screen";
 import TextNormal from "@/src/styles/TextNormal";
@@ -7,7 +8,6 @@ import TextBold from "@/src/styles/TextBold";
 import { color } from "@/src/constants/colors";
 import profileService from "@/src/api/services/main/profileServices";
 import useLoginDataStorage from "@/src/hooks/customStorageHook";
-
 
 // Define interfaces
 interface DriverData {
@@ -31,57 +31,83 @@ interface DriverData {
   iv: string;
 }
 
-interface ApiResponse {
-  statusCode: number;
-  success: boolean;
-  data: DriverData;
-  message: string;
-}
+
+export const createProfileUpdateListener = () => {
+  let listeners: (() => void)[] = [];
+  
+  return {
+    subscribe: (callback: () => void) => {
+      listeners.push(callback);
+      return () => {
+        listeners = listeners.filter(listener => listener !== callback);
+      };
+    },
+    notify: () => {
+      listeners.forEach(listener => listener());
+    }
+  };
+};
+
+
+export const profileUpdateListener = createProfileUpdateListener();
 
 const ProfileCard: React.FC = () => {
   const [driver, setDriver] = useState<DriverData | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
+  const [refreshing, setRefreshing] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [isOfflineData, setIsOfflineData] = useState<boolean>(false);
-  const {loginData} = useLoginDataStorage()
+  const { loginData } = useLoginDataStorage();
+  const [updateCounter, setUpdateCounter] = useState<number>(0);
+
+  const fetchDriverData = useCallback(async (showLoading = true): Promise<void> => {
+    try {
+      if (showLoading) {
+        setLoading(true);
+      }
+      
+      if (!loginData || !loginData.id) {
+        throw new Error("Driver ID not found");
+      }
+      
+      const response = await profileService.getDriverById(loginData.id);
+      
+      if (response.success) {
+        console.log("Fetched driver data:", response.data);
+        setDriver(response.data as DriverData);
+      
+        if (response.message && response.message.includes("cached data")) {
+          setIsOfflineData(true);
+          setError(response.message);
+        } else {
+          setIsOfflineData(false);
+          setError(null);
+        }
+      } else {
+        throw new Error(response.message || "Failed to fetch driver data");
+      }
+    } catch (err: any) {
+      console.error("Error fetching driver data:", err);
+      setError(err.message);
+      setIsOfflineData(true);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  }, [loginData]);
 
   useEffect(() => {
-    const fetchDriverData = async (): Promise<void> => {
-      try {
-        setLoading(true);
-        setLoading(true);
-        if (!loginData || !loginData.id) {
-          throw new Error("Driver ID not found");
-        }
-        
-        const response = await profileService.getDriverById(loginData.id);
-        
-        if (response.success) {
-         console.log(response.data)
-          setDriver(response.data as DriverData);
-        
-          if (response.message && response.message.includes("cached data")) {
-            setIsOfflineData(true);
-            setError(response.message);
-          } else {
-            setIsOfflineData(false);
-            setError(null);
-          }
-        } else {
-          throw new Error(response.message || "Failed to fetch driver data");
-        }
-      } catch (err: any) {
-        console.error("Error fetching driver data:", err);
-        setError(err.message);
-        setIsOfflineData(true);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchDriverData();
-  }, [loginData]); 
+    
 
+    const unsubscribe = profileUpdateListener.subscribe(() => {
+      console.log("Profile update detected, refreshing data...");
+      setUpdateCounter(prev => prev + 1);
+    });
+    
+ 
+    return () => unsubscribe();
+  }, [fetchDriverData, loginData, updateCounter]);
 
   const formatDate = (dateString: string): string => {
     if (!dateString) return '';
@@ -93,7 +119,7 @@ const ProfileCard: React.FC = () => {
     });
   };
 
-  if (loading) {
+  if (loading && !refreshing) {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color={color.primary} />
@@ -124,13 +150,14 @@ const ProfileCard: React.FC = () => {
     );
   }
 
-  // Prepare image URL
+ 
   const imageSource = driver.imageUrl ? 
     { uri: driver.imageUrl} : 
     require('../../assets/images/user.png');
 
   return (
-    <View style={styles.container}>
+
+    <View>
       <TextBold style={styles.heading}>Profile</TextBold>
 
       {isOfflineData && (
@@ -181,12 +208,14 @@ const ProfileCard: React.FC = () => {
           <TextNormal style={styles.rowText}>Joined: {formatDate(driver.dateOfJoining)}</TextNormal>
         </View>
       </View>
+ 
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
   },
   heading: {
     fontSize: hp(2.4),
@@ -209,7 +238,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     borderRadius: 10,
     alignItems: "center",
-    marginBottom: 12,
+    // marginBottom: 12,
   },
   avatar: {
     width: 40,

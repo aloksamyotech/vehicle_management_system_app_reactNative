@@ -16,11 +16,11 @@ import TextNormal from '@/src/styles/TextNormal';
 import { color } from '@/src/constants/colors';
 import DateTimePicker from '@react-native-community/datetimepicker';
 
-import STORAGE_KEYS from '@/src/constants/authConstants';
 import profileService from '@/src/api/services/main/profileServices';
 import useLoginDataStorage from '@/src/hooks/customStorageHook';
+import { profileUpdateListener } from './ProfileCard'; 
 
-// Define interface for driver data
+
 interface DriverData {
   id: number;
   name: string;
@@ -46,10 +46,9 @@ interface EditProfileModalProps {
   visible: boolean;
   onClose: () => void;
   onProfileUpdated?: () => void; 
-
 }
 
-const EditProfileModal: React.FC<EditProfileModalProps> = ({ 
+const EditProfile: React.FC<EditProfileModalProps> = ({ 
   visible, 
   onClose, 
   onProfileUpdated, 
@@ -67,7 +66,10 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [showDatePicker, setShowDatePicker] = useState<boolean>(false);
   const {loginData} = useLoginDataStorage()
-  const driverId = loginData?.id
+  const driverId = loginData?.id;
+  const {storeLoginData} = useLoginDataStorage()
+  const token = loginData?.token
+
   useEffect(() => {
     if (visible) {
       fetchDriverData();
@@ -84,6 +86,7 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
    
       const response = await profileService.getDriverById(loginData.id);
       if (response.success) {
+        console.log(response.data)
         const driverData: DriverData = response.data;
         setName(driverData.name);
         setMobileNo(driverData.mobileNo);
@@ -122,8 +125,13 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
         return;
       }
 
-      const formattedDate = licenseExpiry.toISOString();
+      if (!driverId || !token) {
+        Alert.alert("Error", "User data is missing or incomplete");
+        setLoading(false);
+        return;
+      }
 
+      const formattedDate = licenseExpiry.toISOString();
 
       const updateData = {
         name,
@@ -136,7 +144,10 @@ const EditProfileModal: React.FC<EditProfileModalProps> = ({
       const response = await profileService.updateDriverProfile(Number(driverId), updateData);
       
       if (response.success) {
+        profileUpdateListener.notify();
+        
         Alert.alert("Success", "Profile updated successfully");
+        
         if (onProfileUpdated) {
           onProfileUpdated();
         }
@@ -349,4 +360,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default EditProfileModal;
+export default EditProfile;

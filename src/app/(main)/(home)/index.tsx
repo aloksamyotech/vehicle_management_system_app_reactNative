@@ -11,10 +11,11 @@ import rideTimelineServices from "@/src/api/services/main/rideTimelineServices";
 import { Booking } from "@/src/component/dashboard/RideTypes";
 import useLoginDataStorage from "@/src/hooks/customStorageHook";
 
-// Create Context for Bookings Data with complete interface
+
+
 export const BookingsContext = createContext<{
   bookings: Booking[];
-  loading: boolean;
+  loading: boolean
   error: string | null;
   refreshBookings: () => Promise<void>;
 }>({
@@ -40,12 +41,10 @@ const Dashboard: React.FC = () => {
 
     try {
       setLoading(true);
-      const response = await rideTimelineServices.getTodayBookings(loginData.id);
-      
+      const response = await rideTimelineServices.getTodayBookings(loginData.id);   
       if (!response) {
         throw new Error("No data received from API");
       }
-      
       const bookingsData = Array.isArray(response) ? response : [];
       setBookings(bookingsData);
       setError(null);
@@ -67,7 +66,8 @@ const Dashboard: React.FC = () => {
     fetchBookings();
   }, [fetchBookings]);
   
-  const contextValue = useMemo(() => ({
+
+ const contextValue = useMemo(() => ({
     bookings,
     loading,
     error,
@@ -105,7 +105,7 @@ const Dashboard: React.FC = () => {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={handleRefresh}
-            colors={["#4285F4"]} // Customize as needed
+            colors={["#4285F4"]} 
           />
         }
       >
@@ -123,6 +123,7 @@ const Dashboard: React.FC = () => {
 
   return (
     <BookingsContext.Provider value={contextValue}>
+  
       <OuterContainer>
         {renderContent()}
       </OuterContainer>

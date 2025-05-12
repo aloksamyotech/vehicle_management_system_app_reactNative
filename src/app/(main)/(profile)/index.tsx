@@ -2,10 +2,8 @@ import LogoutButton from "@/src/component/Profile/LogoutButton";
 import ProfileCard from "@/src/component/Profile/ProfileCard";
 import SettingCard from "@/src/component/Profile/SettingCard";
 import OuterContainer from "@/src/styles/OuterContainer";
-import TextBold from "@/src/styles/TextBold";
-import TextNormal from "@/src/styles/TextNormal";
-import { Text, View } from "react-native";
-import { heightPercentageToDP as hp} from "react-native-responsive-screen";
+import {  View } from "react-native";
+
 
 const Profile = () => {
     return (
@@ -20,9 +18,7 @@ const Profile = () => {
                 <LogoutButton/>
                 </View>
             <View style={{flex:1,
-                // backgroundColor:'lightgreen'
-                }}>
-                    
+                }}>      
                 </View>
         </OuterContainer>
     );

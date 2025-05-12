@@ -42,4 +42,27 @@ export interface Vehicle {
     message: string;
   }
   
+  export interface CheckpointData {
+    id: number;
+    bookingId: number;
+    cityName: string;
+    locationUrl: string | null;
+    isActive: boolean;
+    isDeleted: boolean;
+    order: number;
+    createdAt: string;
+    updatedAt: string;
+  }
   
+  export interface ApiResponse<T> {
+    statusCode: number;
+    success: boolean;
+    data: T;
+    message: string;
+  }
+  
+  export interface UpdateLocationResponse {
+    success: boolean;
+    message?: string;
+    error?: string;
+  }

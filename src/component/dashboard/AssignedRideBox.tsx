@@ -1,14 +1,14 @@
 import React, { useContext } from "react";
-import { View, StyleSheet, TouchableOpacity, Text, ActivityIndicator } from "react-native";
+import { View, StyleSheet, TouchableOpacity,  ActivityIndicator } from "react-native";
 import TextNormal from "@/src/styles/TextNormal";
 import TextBold from "@/src/styles/TextBold";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from "react-native-responsive-screen";
 import { spacing } from "@/src/styles/Spacing";
-import { useRouter } from "expo-router";
+import { useRouter, useFocusEffect } from "expo-router";
 import { color } from "@/src/constants/colors";
-import { Booking } from "./RideTypes";
 import { BookingsContext } from "@/src/app/(main)/(home)";
+import rideTimelineServices from "@/src/api/services/main/rideTimelineServices";
 
 
 
@@ -16,6 +16,16 @@ const AssignedRideBox: React.FC = () => {
   const router = useRouter();
   const { bookings, loading, error, refreshBookings } = useContext(BookingsContext);
   const booking = bookings.length > 0 ? bookings[0] : undefined;
+
+  useFocusEffect(
+    React.useCallback(() => {
+
+      refreshBookings();
+      return () => {
+   
+      };
+    }, [refreshBookings])
+  );
 
   console.log("AssignedRideBox - bookings:", bookings);
   console.log("AssignedRideBox - booking:", booking);
@@ -35,11 +45,37 @@ const AssignedRideBox: React.FC = () => {
     })
   : '';
 
-  const handleJourney = (): void => {
-    router.navigate("/rideDetails");
+
+  const isStartButtonEnabled = booking?.tripStatus == "YetToStart";
+
+  console.log(booking?.tripStatus)
+
+  const handleJourney = async(): Promise<void> => {
+    if (booking?.id && isStartButtonEnabled) {
+      const bookingId = String(booking.id);
+      
+      try {
+        const payload = {
+          tripStatus:"ongoing"
+        }
+     
+        await rideTimelineServices.updateTripStatus(bookingId, payload);
+        
+        
+        router.navigate({
+          pathname: "/rideDetails",
+          params: { bookingId }
+        });
+       
+      } catch (error: any) {
+        console.error("Error updating trip status:", error);
+      }
+    } else {
+      console.warn("Cannot navigate to ride details: booking ID is undefined or button is disabled");
+    }
   };
 
-  // Show loading indicator if data is still loading
+
   if (loading) {
     return (
       <View style={styles.container}>
@@ -57,7 +93,6 @@ const AssignedRideBox: React.FC = () => {
     );
   }
 
-  // Show error message if there was an error loading data
   if (error) {
     return (
       <View style={styles.container}>
@@ -77,7 +112,6 @@ const AssignedRideBox: React.FC = () => {
     );
   }
 
-  // Show no rides message if no bookings available
   if (!booking) {
     return (
       <View style={styles.container}>
@@ -98,7 +132,6 @@ const AssignedRideBox: React.FC = () => {
     );
   }
  
-  // Default view with booking data
   return (
     <View style={styles.container}>
       {/* Header */}
@@ -139,10 +172,16 @@ const AssignedRideBox: React.FC = () => {
       <View style={styles.footer}>
         <View style={styles.fareRow}>
           <TextNormal style={styles.fareLabel}>Fare</TextNormal>
-          <TextNormal style={styles.fareValue}>{booking.totalAmt ? `$${booking.totalAmt}` : "$35"}</TextNormal>
+          <TextNormal style={styles.fareValue}>{booking.totalAmt ? `₹${booking.totalAmt}` : "$35"}</TextNormal>
         </View>
-        <TouchableOpacity style={styles.button} onPress={handleJourney}>
-          <TextNormal style={styles.buttonText}>Start Journey</TextNormal>
+        <TouchableOpacity 
+          style={[styles.button, !isStartButtonEnabled && styles.disabledButton]} 
+          onPress={handleJourney}
+          disabled={!isStartButtonEnabled}
+        >
+          <TextNormal style={styles.buttonText}>
+            {isStartButtonEnabled ? "Start Journey" : "Journey Started"}
+          </TextNormal>
         </TouchableOpacity>
       </View>
     </View>
@@ -260,6 +299,10 @@ const styles = StyleSheet.create({
     height: hp(4.8),
     justifyContent: "center",
     alignItems: "center",
+  },
+  disabledButton: {
+    backgroundColor: "#AAAAAA", // Gray color for disabled state
+    opacity: 0.7,
   },
   buttonText: {
     color: "white",
